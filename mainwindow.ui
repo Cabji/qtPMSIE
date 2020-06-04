@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>351</width>
+    <height>181</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>332</width>
+      <height>126</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="lblTitle">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Plex Media Server Watch Metadata Import / Export Utility</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2,0">
+         <item>
+          <widget class="QLabel" name="lblSource">
+           <property name="text">
+            <string>Source:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="leSource"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnSource">
+           <property name="text">
+            <string>Browse...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,2,0">
+         <item>
+          <widget class="QLabel" name="lblDest">
+           <property name="text">
+            <string>Destination: </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="leDest"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnDest">
+           <property name="text">
+            <string>Browse...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QComboBox" name="coboAction">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <property name="maxVisibleItems">
+            <number>2</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>Export from Source to Destination</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Import from Source to Destination</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnLaunch">
+           <property name="text">
+            <string>LAUNCH</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>351</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuTest">
+    <property name="title">
+     <string>☰</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuTest"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
