@@ -4,7 +4,15 @@
 #include "QDebug"
 #include "QtSql/QSqlDriver"
 #include "QtSql/QSqlDatabase"
+#include "QtSql/QSqlError"
+#include "QtSql/QSqlQuery"
 #include "QFileInfo"
+
+const QList<QString> QLIST_DB_FIELD_NAMES = { "id", "account_id", "guid", "rating",
+																							"view_offset", "view_count", "last_viewed_at",
+																							"created_at", "updated_at", "skip_count",
+																							"last_skipped_at", "changed_at", "extra_data",
+																							"last_rated_at" };
 
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent)
@@ -33,8 +41,7 @@ bool MainWindow::createDBConnection(QString dbFile)
           qsqlDB.setDatabaseName(ui->leSource->text());
           bool success = qsqlDB.open();
           qDebug() << "db connection was:" << success;
-          qsqlDB.close();
-
+					return success;
       }
   }
   else
@@ -63,9 +70,53 @@ void MainWindow::on_btnDest_clicked()
 
 void MainWindow::on_btnLaunch_clicked()
 {
-    // check the value of ui->coboAction and act accordingly
+	// check the value of ui->coboAction and act accordingly
   if (ui->coboAction->currentText() == "Export from Source to Destination")
   {
+			// exporting from database, attempt connection
+			if (MainWindow::createDBConnection(ui->leSource->text()))
+			{
+					int iRowsTotal = 1;
+					QSqlQuery query;
+					query.prepare("SELECT * FROM metadata_item_settings");
+					if (query.exec())
+					{
+						 qDebug() << "db query succeeded, numRowsAffected:" << query.numRowsAffected();
+						 // loop through the database query results
+						 query.first();
+						 do
+						 {
+								 bool okCheck;
+								 QString o = "INSERT INTO metadata_item_settings VALUES (";
+								 // loop through the fieldNames
+								 for (int i = 0; i < QLIST_DB_FIELD_NAMES.size(); ++i)
+								 {
+									 QString qstrFieldValue = query.value(i).toString();
+									 if (qstrFieldValue.toInt(&okCheck, 10))
+									 {
+											 o.append(qstrFieldValue + ", ");
+									 }
+									 else if (qstrFieldValue.isEmpty())
+									 {
+										 o.append("NULL, ");
+									 }
+									 else
+									 {
+										 o.append("'" + qstrFieldValue + "', ");
+									 }
+								 }
+								 o.chop(2);
+								 o.append(");");
+								 qDebug() << o;
+								 iRowsTotal++;
+						 } while (query.next());
+					}
+					else
+					{
+							qDebug() << "db query failed, error was: " << query.lastError();
+					}
+					qDebug() << "Total Rows Processed:" << iRowsTotal;
+			}
   }
   else if (ui->coboAction->currentText() == "Import from Source to Destination")
   {
@@ -76,4 +127,5 @@ void MainWindow::on_btnLaunch_clicked()
       // this should never happen unless there is a bug
       qDebug() << "some how this happened... ???";
   }
+	qsqlDB.close();
 }
