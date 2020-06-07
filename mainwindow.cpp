@@ -62,6 +62,9 @@ void MainWindow::on_btnSource_clicked()
 
 void MainWindow::on_btnDest_clicked()
 {
+	/*
+	 * need to make this FileDialog accept if the user enters a non-existant filename
+	 */
   QString qstrDest = QFileDialog::getOpenFileName(this,
       tr("Select Destination file..."), QDir::toNativeSeparators(QDir::homePath()), tr("Plex Database File (*.plugins.library.db*);;Any File (*.*)"));
   ui->leDest->setText(qstrDest);
@@ -76,17 +79,22 @@ void MainWindow::on_btnLaunch_clicked()
 			// exporting from database, attempt connection
 			if (MainWindow::createDBConnection(ui->leSource->text()))
 			{
-					int iRowsTotal = 1;
+					int iRowsTotal = 0;
 					QSqlQuery query;
 					query.prepare("SELECT * FROM metadata_item_settings");
 					if (query.exec())
 					{
-						 qDebug() << "db query succeeded, numRowsAffected:" << query.numRowsAffected();
-						 // loop through the database query results
-						 query.first();
-						 do
-						 {
+						QFile qfileOutFile(ui->leDest->text());
+						if (qfileOutFile.open(QIODevice::WriteOnly | QIODevice::Text))
+						{
+							QTextStream qtstOut(&qfileOutFile);
+							qDebug() << "db query succeeded, numRowsAffected:" << query.numRowsAffected();
+							// loop through the database query results
+							query.first();
+							do
+							{
 								 bool okCheck;
+								 iRowsTotal++;
 								 QString o = "INSERT INTO metadata_item_settings VALUES (";
 								 // loop through the fieldNames
 								 for (int i = 0; i < QLIST_DB_FIELD_NAMES.size(); ++i)
@@ -107,9 +115,14 @@ void MainWindow::on_btnLaunch_clicked()
 								 }
 								 o.chop(2);
 								 o.append(");");
-								 qDebug() << o;
-								 iRowsTotal++;
-						 } while (query.next());
+								 qtstOut << o << "\n";
+							} while (query.next());
+							qfileOutFile.close();
+						}
+						else
+						{
+							qDebug() << "Oops! Could not open output file '" << ui->leDest->text() << "' for writing.";
+						}
 					}
 					else
 					{
