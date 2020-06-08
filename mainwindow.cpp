@@ -62,11 +62,14 @@ void MainWindow::on_btnSource_clicked()
 
 void MainWindow::on_btnDest_clicked()
 {
-	/*
-	 * need to make this FileDialog accept if the user enters a non-existant filename
-	 */
-  QString qstrDest = QFileDialog::getOpenFileName(this,
-      tr("Select Destination file..."), QDir::toNativeSeparators(QDir::homePath()), tr("Plex Database File (*.plugins.library.db*);;Any File (*.*)"));
+	// dev-note: QFileDialog::getSaveFileName can be used to 'select' a non-existant file using a standard file selection dialog
+	// reference: https://stackoverflow.com/questions/29907625/qfiledialog-using-getopenfilename-allow-for-non-existent-files/29907690#29907690
+	QString qstrDest = QFileDialog::getSaveFileName(this,
+			tr("Select Destination file..."),
+			QDir::toNativeSeparators(QDir::homePath()),
+			tr("Plex Database File (*.plugins.library.db*);;Any File (*.*)"),
+			nullptr,
+			QFileDialog::DontConfirmOverwrite);
   ui->leDest->setText(qstrDest);
   qDebug() << "qstrDest:" << qstrDest;
 }
@@ -130,10 +133,36 @@ void MainWindow::on_btnLaunch_clicked()
 					}
 					qDebug() << "Total Rows Processed:" << iRowsTotal;
 			}
+			else
+			{
+				// database connection failed - should prolly let the user nkow about that?
+			}
   }
   else if (ui->coboAction->currentText() == "Import from Source to Destination")
   {
-      qDebug() << "this is the import handling...";
+			if (MainWindow::createDBConnection(ui->leDest->text()))
+			{
+				// open the sourceFile and loop it, pushing contents into destFile
+				QFile qfileInFile(ui->leSource->text());
+				if (qfileInFile.open(QIODevice::ReadOnly | QIODevice::Text))
+				{
+					qDebug() << "we are reading the source file...";
+					while (!qfileInFile.atEnd())
+					{
+						QByteArray line = qfileInFile.readLine();
+						line.chop(1);
+						qDebug() << line;
+					}
+				}
+				else
+				{
+					// file open for reading failed - should prolly let user know about that?
+				}
+			}
+			else
+			{
+				// database connection failed - should prolly let the user nkow about that?
+			}
   }
   else
   {
