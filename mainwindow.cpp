@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "QFileDialog"
 #include "QDebug"
+#include "QMessageBox"
 #include "QtSql/QSqlDriver"
 #include "QtSql/QSqlDatabase"
 #include "QtSql/QSqlError"
@@ -98,7 +99,7 @@ void MainWindow::on_btnLaunch_clicked()
 							{
 								 bool okCheck;
 								 iRowsTotal++;
-								 QString o = "INSERT INTO metadata_item_settings VALUES (";
+								 QString o = "INSERT OR REPLACE INTO metadata_item_settings VALUES (";
 								 // loop through the fieldNames
 								 for (int i = 0; i < QLIST_DB_FIELD_NAMES.size(); ++i)
 								 {
@@ -121,6 +122,13 @@ void MainWindow::on_btnLaunch_clicked()
 								 qtstOut << o << "\n";
 							} while (query.next());
 							qfileOutFile.close();
+							QString qstrCompleteMsg =	"Total records exported: " + QString::number(iRowsTotal);
+							// the qbytearray is used to cast the QString to a char string so that we can use it in the tr() call for the QMessageBox
+							QByteArray ba = qstrCompleteMsg.toLocal8Bit();
+							const char *cstrCompleteMsg = ba.data();
+							QMessageBox::information(this, tr("Export Complete"),
+																						 tr(cstrCompleteMsg),
+																						 QMessageBox::Ok);
 						}
 						else
 						{
@@ -140,8 +148,13 @@ void MainWindow::on_btnLaunch_clicked()
   }
   else if (ui->coboAction->currentText() == "Import from Source to Destination")
   {
+			// importing from database, attempt connection
 			if (MainWindow::createDBConnection(ui->leDest->text()))
 			{
+				int iRowsTotal	= 0;
+				int iRowsOK		= 0;
+				int iRowsFail	= 0;
+				QSqlQuery query;
 				// open the sourceFile and loop it, pushing contents into destFile
 				QFile qfileInFile(ui->leSource->text());
 				if (qfileInFile.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -149,10 +162,30 @@ void MainWindow::on_btnLaunch_clicked()
 					qDebug() << "we are reading the source file...";
 					while (!qfileInFile.atEnd())
 					{
+						iRowsTotal++;
 						QByteArray line = qfileInFile.readLine();
 						line.chop(1);
-						qDebug() << line;
+						query.prepare(line);
+						qDebug() << "Query: " + line;
+						if (query.exec(line))
+						{
+							iRowsOK++;
+						}
+						else
+						{
+							iRowsFail++;
+							qDebug() << query.lastError();
+						}
 					}
+					QString qstrCompleteMsg =	"Total lines processed: " + QString::number(iRowsTotal) + "\n" +
+																		"Records imported: " + QString::number(iRowsOK) + "\n" +
+																		"Lines failed: " + QString::number(iRowsFail);
+					// the qbytearray is used to cast the QString to a char string so that we can use it in the tr() call for the QMessageBox
+					QByteArray ba = qstrCompleteMsg.toLocal8Bit();
+					const char *cstrCompleteMsg = ba.data();
+					QMessageBox::information(this, tr("Import Complete"),
+																				 tr(cstrCompleteMsg),
+																				 QMessageBox::Ok);
 				}
 				else
 				{
@@ -170,4 +203,9 @@ void MainWindow::on_btnLaunch_clicked()
       qDebug() << "some how this happened... ???";
   }
 	qsqlDB.close();
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+		QMessageBox::about(this, "PMSIE::About", "PMSIE is a small utility to export/import watched media metadata from/to Plex Media Server's database.<br/><br/>Written by Cabji, 2020.<br/><br/><a href=\"https://github.com/Cabji/qtPMSIE\">https://github.com/Cabji/qtPMSIE</a><br/><br/>Free for all, provided as is, no warranty or liability.");
 }

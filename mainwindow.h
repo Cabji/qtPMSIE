@@ -23,6 +23,8 @@ private slots:
 
   void on_btnLaunch_clicked();
 
+	void on_actionAbout_triggered();
+
 private:
   Ui::MainWindow *ui;
   QSqlDatabase qsqlDB;
