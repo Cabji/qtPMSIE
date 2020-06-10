@@ -1,13 +1,15 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "QFileDialog"
 #include "QDebug"
+#include "QFileDialog"
+#include "QFileInfo"
 #include "QMessageBox"
+#include "QProgressDialog"
 #include "QtSql/QSqlDriver"
 #include "QtSql/QSqlDatabase"
 #include "QtSql/QSqlError"
 #include "QtSql/QSqlQuery"
-#include "QFileInfo"
+#include "QThread"
 
 const QList<QString> QLIST_DB_FIELD_NAMES = { "id", "account_id", "guid", "rating",
 																							"view_offset", "view_count", "last_viewed_at",
@@ -77,7 +79,7 @@ void MainWindow::on_btnDest_clicked()
 
 void MainWindow::on_btnLaunch_clicked()
 {
-	// check the value of ui->coboAction and act accordingly
+// check the value of ui->coboAction and act accordingly
   if (ui->coboAction->currentText() == "Export from Source to Destination")
   {
 			// exporting from database, attempt connection
@@ -133,40 +135,56 @@ void MainWindow::on_btnLaunch_clicked()
 						else
 						{
 							qDebug() << "Oops! Could not open output file '" << ui->leDest->text() << "' for writing.";
+							QMessageBox::warning(	this,
+																		tr("Open file failed"),
+																		tr("Unable to open the destination file for writing.<br/>Please check the file's permissions or existence."),
+																		QMessageBox::Ok);
 						}
 					}
 					else
 					{
 							qDebug() << "db query failed, error was: " << query.lastError();
+							QMessageBox::warning(	this,
+																		tr("Database query failed"),
+																		tr("Query to the SQLite database failed. No data could be read from the database file so there's nothing to export.<br/>Please check the file's permissions, format or existence."),
+																		QMessageBox::Ok);
 					}
 					qDebug() << "Total Rows Processed:" << iRowsTotal;
 			}
 			else
 			{
 				// database connection failed - should prolly let the user nkow about that?
+				QMessageBox::warning(	this,
+															tr("Database connection failed"),
+															tr("Unable to connect to the SQLite database.<br/>Please check the file's permissions, format or existence."),
+															QMessageBox::Ok);
 			}
   }
   else if (ui->coboAction->currentText() == "Import from Source to Destination")
   {
-			// importing from database, attempt connection
+// importing from database, attempt connection
 			if (MainWindow::createDBConnection(ui->leDest->text()))
 			{
 				int iRowsTotal	= 0;
 				int iRowsOK		= 0;
 				int iRowsFail	= 0;
 				QSqlQuery query = QSqlQuery(qsqlDB);
-//				query.prepare("PRAGMA foreign_keys=OFF;");
-//				query.exec();
-				// open the sourceFile and loop it, pushing contents into destFile
 				QFile qfileInFile(ui->leSource->text());
+				qint64 filesize = qfileInFile.size();
+				int readBytes = 0;
+
+// open the sourceFile and loop it, pushing contents into destFile
 				if (qfileInFile.open(QIODevice::ReadOnly | QIODevice::Text))
 				{
-					qDebug() << "we are reading the source file...";
 					QByteArray line;
+					QProgressDialog progress("Importing data...", "Cancel", 0, 100, this);
+					progress.setWindowModality(Qt::WindowModal);
+
 					while (!qfileInFile.atEnd())
 					{
 						iRowsTotal++;
 						line = qfileInFile.readLine();
+						readBytes += line.length();
 						qDebug() << "Query: " + line;
 						query.prepare(line);
 						if (query.exec(line))
@@ -178,6 +196,9 @@ void MainWindow::on_btnLaunch_clicked()
 							iRowsFail++;
 							qDebug() << query.lastError();
 						}
+						progress.setValue((int)((readBytes * 100) / filesize));
+						if (progress.wasCanceled())
+							break;
 					}
 					QString qstrCompleteMsg =	"Total lines processed: " + QString::number(iRowsTotal) + "\n" +
 																		"Records imported: " + QString::number(iRowsOK) + "\n" +
@@ -192,11 +213,20 @@ void MainWindow::on_btnLaunch_clicked()
 				else
 				{
 					// file open for reading failed - should prolly let user know about that?
+					QMessageBox::warning(	this,
+																tr("Open file failed"),
+																tr("Unable to open the source file.<br/>Please check the file's permissions, format or existence."),
+																QMessageBox::Ok);
 				}
+
 			}
 			else
 			{
 				// database connection failed - should prolly let the user nkow about that?
+				QMessageBox::warning(	this,
+															tr("Database connection failed"),
+															tr("Unable to connect to the SQLite database.<br/>Please check the file's permissions, format or existence."),
+															QMessageBox::Ok);
 			}
   }
   else
