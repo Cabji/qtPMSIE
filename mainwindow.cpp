@@ -39,7 +39,7 @@ bool MainWindow::createDBConnection(QString dbFile)
           qDebug() << "source:" << ui->leSource->text();
           // for some reason, the addDatabase call has to be a static call on the next line
           qsqlDB = QSqlDatabase::addDatabase("QSQLITE");
-          qsqlDB.setDatabaseName(ui->leSource->text());
+					qsqlDB.setDatabaseName(dbFile);
           bool success = qsqlDB.open();
           qDebug() << "db connection was:" << success;
 					return success;
@@ -154,19 +154,21 @@ void MainWindow::on_btnLaunch_clicked()
 				int iRowsTotal	= 0;
 				int iRowsOK		= 0;
 				int iRowsFail	= 0;
-				QSqlQuery query;
+				QSqlQuery query = QSqlQuery(qsqlDB);
+//				query.prepare("PRAGMA foreign_keys=OFF;");
+//				query.exec();
 				// open the sourceFile and loop it, pushing contents into destFile
 				QFile qfileInFile(ui->leSource->text());
 				if (qfileInFile.open(QIODevice::ReadOnly | QIODevice::Text))
 				{
 					qDebug() << "we are reading the source file...";
+					QByteArray line;
 					while (!qfileInFile.atEnd())
 					{
 						iRowsTotal++;
-						QByteArray line = qfileInFile.readLine();
-						line.chop(1);
-						query.prepare(line);
+						line = qfileInFile.readLine();
 						qDebug() << "Query: " + line;
+						query.prepare(line);
 						if (query.exec(line))
 						{
 							iRowsOK++;
