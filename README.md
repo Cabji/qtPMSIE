@@ -1,4 +1,8 @@
 # qtPMSIE
-Plex Media Server Import Export utility written in C++ &amp; Qt
+Plex Media Server Import Export utility.
 
-This is a work in progress. It is the kvsPMSIE utility being written in C++ and Qt.
+It is the kvsPMSIE utility being written in C++ and Qt.
+
+## Download
+
+Release package for Windows is here: https://github.com/Cabji/qtPMSIE/blob/master/qtPMSIE.zip
