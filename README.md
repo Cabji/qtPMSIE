@@ -1,7 +1,7 @@
 # qtPMSIE
 Plex Media Server Import Export utility.
 
-It is the kvsPMSIE utility being written in C++ and Qt.
+This is PMSIE utility written in C++ and Qt.
 
 ## Download
 
