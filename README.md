@@ -1,5 +1,5 @@
 # qtPMSIE
-Plex Media Server Import Export utility.
+Plex Media Server Import Export utility for your show/movie watched metadata.
 
 This is PMSIE utility written in C++ and Qt.
 
