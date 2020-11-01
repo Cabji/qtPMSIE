@@ -241,3 +241,8 @@ void MainWindow::on_actionAbout_triggered()
 {
 		QMessageBox::about(this, "PMSIE::About", "PMSIE is a small utility to export/import watched media metadata from/to Plex Media Server's database.<br/><br/>Written by Cabji, 2020.<br/><br/><a href=\"https://github.com/Cabji/qtPMSIE\">https://github.com/Cabji/qtPMSIE</a><br/><br/>Free for all, provided as is, no warranty or liability.");
 }
+
+void MainWindow::on_actionHelp_triggered()
+{
+		QMessageBox::about(this, "PMSIE::Help", "For help, please see <a href=\"http://www.github.com/Cabji/qtPMSIE/help\">PMSIE Help Online</a>.");
+}
